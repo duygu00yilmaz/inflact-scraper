@@ -3,7 +3,6 @@ const puppeteer = require('puppeteer');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// BU SATIRIN MEVCUT OLDUĞUNDAN EMİN OLUN
 app.get('/scrape', async (req, res) => {
     const username = req.query.username;
     if (!username) {
@@ -12,9 +11,21 @@ app.get('/scrape', async (req, res) => {
 
     let browser;
     try {
-        browser = await puppeteer.launch({ headless: "new", args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+        browser = await puppeteer.launch({
+            headless: "new",
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-gpu',
+                '--disable-dev-shm-usage',
+                '--disable-software-rasterizer',
+                '--disable-web-security',
+                '--disable-features=IsolateOrigins,site-per-process'
+            ],
+            executablePath: '/usr/bin/chromium-browser' // Render.com'un Chromium binary'sini kullan
+        });
+
         const page = await browser.newPage();
-        
         const targetUrl = `https://inflact.com/tr/instagram-viewer/profile/${username}/`;
         await page.goto(targetUrl, { waitUntil: 'networkidle2', timeout: 45000 });
 
@@ -43,7 +54,6 @@ app.get('/scrape', async (req, res) => {
     }
 });
 
-// SUNUCUYU BAŞLATAN SATIR
 app.listen(PORT, () => {
     console.log(`Inflact scraper running on port ${PORT}`);
 });
